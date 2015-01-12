@@ -1,0 +1,10 @@
+pandas==0.15.1
+numpy==1.9.1
+scipy==0.14.0
+matplotlib==1.4.2
+scikit-learn==0.15.1
+h5py==2.3.1
+munkres==1.0.7
+-e git+https://github.com/wmayner/pyemd@develop#egg=pyemd
+
+#-e git+ssh://git@bitbucket.org/hermands/hsqr.git@flow-dev#egg=hsqr
