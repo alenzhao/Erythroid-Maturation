@@ -14,11 +14,40 @@ from itertools import product
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+from multiprocessing import pool
+from multiprocessing.dummy import Pool as ThreadPool 
 
 from pyemd import emd
 from Analysis_Variables import *
 
 output = {}
+
+kmeans_jobs = 1
+clusters = 40
+
+def worker(antigen):
+    print antigen
+    atg_list = backbone_antigens+[antigen]
+    A_dat= A.data[atg_list][A.erythroid_mask]
+    B_dat = B.data[atg_list][B.erythroid_mask]
+    A_cluster = kmeans_clustering(A_dat,n_clusters=clusters,n_jobs=kmeans_jobs)
+    
+    B_cluster = kmeans_clustering(B_dat,n_clusters=clusters,n_jobs=kmeans_jobs)
+    
+    distance_matrix = cdist(A_cluster.output[atg_list],
+                            B_cluster.output[atg_list],
+                            'cityblock')
+    
+    XA = A_cluster.output["cluster_size"].values.astype(np.double)
+    XA = XA/np.sum(XA)
+    XB = B_cluster.output["cluster_size"].values.astype(np.double)
+    XB = XB/np.sum(XB)
+    cost = emd(XA,XB,distance_matrix)
+
+    print("{} has emd of {}".format(antigen,cost))
+    return cost
+    
+        
 
 for (Normal,Base) in product(NormNames,NormNames+AbnNames):
     print("Comparing {} with {}".format(Normal,Base))
@@ -46,27 +75,12 @@ for (Normal,Base) in product(NormNames,NormNames+AbnNames):
     
     plate_plate=pd.Series()
     antigens_to_test = [i for i in A.data.columns if i not in backbone_antigens]
-     
-    for antigen in antigens_to_test:
-        atg_list = backbone_antigens+[antigen]
-        A_dat= A.data[atg_list][A.erythroid_mask]
-        B_dat = B.data[atg_list][B.erythroid_mask]
-        A_cluster = kmeans_clustering(A_dat,n_clusters=40,n_jobs=32)
-        
-        B_cluster = kmeans_clustering(B_dat,n_clusters=40,n_jobs=32)
-        
-        distance_matrix = cdist(A_cluster.output[atg_list],
-                                B_cluster.output[atg_list],
-                                'cityblock')
-        
-        XA = A_cluster.output["cluster_size"].values.astype(np.double)
-        XA = XA/np.sum(XA)
-        XB = B_cluster.output["cluster_size"].values.astype(np.double)
-        XB = XB/np.sum(XB)
-        cost = emd(XA,XB,distance_matrix)
-        plate_plate[antigen]=cost
-        print("{} has emd of {}".format(antigen,cost))
-    output["{}vs{}".format(Normal,Base)] = plate_plate
+    
+    pool = ThreadPool(4)
+    costs = pool.map(worker,antigens_to_test)
+    pool.close()
+    pool.join()        
+    output["{}vs{}".format(Normal,Base)] = dict(zip(antigens_to_test,costs))
 
     writing_out = pd.DataFrame(output)
     writing_out.to_csv(output_file)
