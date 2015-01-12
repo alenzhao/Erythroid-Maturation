@@ -23,7 +23,6 @@ var/
 *.egg
 db/
 src/
-*.pdf
 *.fcs
 *.png
 
