@@ -39,6 +39,7 @@ Disp_Antigen_list = ['CD45','CD34','CD38','CD71 FITC'
                 
 common_antigens = ['SSC-H','FSC-A','CD45','CD34','CD36','CD38','CD71 FITC']
 
+backbone_antigens = ['SSC-H','FSC-A','CD45','CD34','CD117','CD13','CD38','CD71 FITC']
 NormNames = ['Normal1','Normal2','Normal3']
 AbnNames = ['FLT3+AML','tMDS','RAEB-1','RCMD','RCUD']
 
