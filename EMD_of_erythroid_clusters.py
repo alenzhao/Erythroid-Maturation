@@ -51,9 +51,9 @@ for (Normal,Base) in product(NormNames,NormNames+AbnNames):
         atg_list = backbone_antigens+[antigen]
         A_dat= A.data[atg_list][A.erythroid_mask]
         B_dat = B.data[atg_list][B.erythroid_mask]
-        A_cluster = kmeans_clustering(A_dat,n_clusters=40,n_jobs=4)
+        A_cluster = kmeans_clustering(A_dat,n_clusters=40,n_jobs=32)
         
-        B_cluster = kmeans_clustering(B_dat,n_clusters=40,n_jobs=4)
+        B_cluster = kmeans_clustering(B_dat,n_clusters=40,n_jobs=32)
         
         distance_matrix = cdist(A_cluster.output[atg_list],
                                 B_cluster.output[atg_list],
@@ -69,11 +69,11 @@ for (Normal,Base) in product(NormNames,NormNames+AbnNames):
     output["{}vs{}".format(Normal,Base)] = plate_plate
 
     writing_out = pd.DataFrame(output)
-    writing_out.to_csv("/home/ngdavid/Desktop/Ubuntu_Dropbox/Interplate Comparison/EMD_Analysis/BackboneSimulation.csv")
+    writing_out.to_csv(output_file)
 
 c = [i for i in writing_out.columns if i not in ['Untitled: 0']]
 writing_out['mean'] = writing_out.mean(axis=1)
 writing_out['rms'] = np.sqrt(sum(output[c]*output[c],axis=1))
 
-writing_out.to_csv("/home/ngdavid/Desktop/Ubuntu_Dropbox/Interplate Comparison/EMD_Analysis/BackboneSimulation.csv")
+writing_out.to_csv(output_file)
 
