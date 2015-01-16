@@ -23,6 +23,7 @@ from Analysis_Variables import *
 output = {}
 
 kmeans_jobs = 1
+num_workers = 52
 clusters = 40
 
 def worker(antigen):
@@ -76,7 +77,7 @@ for (Normal,Base) in product(NormNames,NormNames+AbnNames):
     plate_plate=pd.Series()
     antigens_to_test = [i for i in A.data.columns if i not in backbone_antigens]
     
-    pool = ThreadPool(4)
+    pool = ThreadPool(num_workers)
     costs = pool.map(worker,antigens_to_test)
     pool.close()
     pool.join()        
@@ -86,8 +87,8 @@ for (Normal,Base) in product(NormNames,NormNames+AbnNames):
     writing_out.to_csv(output_file)
 
 c = [i for i in writing_out.columns if i not in ['Untitled: 0']]
-writing_out['mean'] = writing_out.mean(axis=1)
-writing_out['rms'] = np.sqrt(sum(output[c]*output[c],axis=1))
+#writing_out['mean'] = writing_out.mean(axis=1)
+#writing_out['rms'] = np.sqrt(sum(output[c]*output[c],axis=1))
 
-writing_out.to_csv(output_file)
+#writing_out.to_csv(output_file)
 
